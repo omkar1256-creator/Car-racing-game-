@@ -3,36 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Car Racing Game with Audio & Custom Controls</title>
+    <title>Ultimate Pro Car Racing Game</title>
     <style>
         * { box-sizing: border-box; font-family: 'Arial', sans-serif; user-select: none; }
         body { margin: 0; padding: 0; background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
-        .game-container { position: relative; width: 100%; max-width: 500px; height: 100vh; display: flex; flex-direction: column; background: #222; }
+        .game-container { position: relative; width: 100%; max-width: 500px; height: 100vh; display: flex; flex-direction: column; background: #222; transition: background 2s; }
         
         /* Top Status Bar */
         #status-bar { display: flex; justify-content: space-between; background: #111; color: #fff; padding: 10px 20px; font-size: 18px; font-weight: bold; z-index: 10; border-bottom: 2px solid #444; }
         #speedo { color: #00ffcc; }
+        #shield-status { color: #3a86ff; display: none; }
 
         /* Main Environment */
-        #world { position: relative; flex: 1; background: #2e7d32; overflow: hidden; display: flex; justify-content: center; }
+        #world { position: relative; flex: 1; background: #2e7d32; overflow: hidden; display: flex; justify-content: center; transition: background 2s; }
         
         /* Road Setup */
-        #road { position: relative; width: 280px; height: 100%; background: #333; border-left: 6px double #fff; border-right: 6px double #fff; overflow: hidden; }
+        #road { position: relative; width: 280px; height: 100%; background: #333; border-left: 6px double #fff; border-right: 6px double #fff; overflow: hidden; transition: background 2s; }
         
         /* Road Lines */
         .line { position: absolute; width: 10px; height: 50px; background: #fff; left: 135px; }
         .special-line { position: absolute; width: 100%; height: 30px; left: 0; display: flex; background: repeating-conic-gradient(#fff 0% 25%, #000 0% 50%) 0% 0%/20px 20px; }
 
-        /* Heavy Audience / Aadmi on Side Tracks */
+        /* Heavy Audience */
         .audience-track { position: absolute; top: 0; width: 90px; height: 100%; display: flex; flex-direction: column; justify-content: space-around; align-items: center; font-size: 18px; z-index: 2; }
-        .track-left { left: 5px; }
-        .track-right { right: 5px; }
+        .track-left { left: 5px; } .track-right { right: 5px; }
         .spectator { display: inline-block; transition: transform 0.1s; margin: 5px 0; }
 
         /* Entities */
-        #player-car { position: absolute; width: 45px; height: 80px; bottom: 30px; left: 115px; z-index: 5; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+        #player-car { position: absolute; width: 45px; height: 80px; bottom: 100px; left: 115px; z-index: 5; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); transition: box-shadow 0.3s; }
         .enemy-car { position: absolute; width: 45px; height: 80px; z-index: 4; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+        
+        /* Items (Coins & Shield) */
+        .item { position: absolute; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; font-size: 22px; z-index: 3; animation: spin 1s infinite linear; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* Car Details */
         .car-wheel { position: absolute; width: 8px; height: 16px; background: #111; border-radius: 2px; }
@@ -40,17 +44,16 @@
         .w-bl { bottom: 10px; left: -6px; } .w-br { bottom: 10px; right: -6px; }
         .glass { position: absolute; width: 33px; height: 20px; background: rgba(255,255,255,0.6); left: 6px; top: 25px; border-radius: 4px; }
 
-        /* Custom Screen Side Buttons (S and B) */
-        .side-btn { position: absolute; top: 40%; width: 65px; height: 100px; color: white; font-size: 28px; font-weight: bold; border-radius: 12px; display: flex; justify-content: center; align-items: center; z-index: 15; box-shadow: 0 6px 12px rgba(0,0,0,0.4); border: 3px solid #fff; cursor: pointer; }
-        #btn-gas { left: 15px; background: rgba(46, 125, 50, 0.85); } /* Left Side S */
-        #btn-brake { right: 15px; background: rgba(198, 40, 40, 0.85); } /* Right Side B */
-        .side-btn:active, .side-btn.active { transform: scale(0.92); background: #fff !important; color: #111 !important; }
-
-        /* Steering/Side Buttons Dashboard (Bottom Center) */
-        #steering-dashboard { background: #1a1a1a; padding: 15px; display: flex; justify-content: center; border-top: 2px solid #444; z-index: 10; }
-        .steer-group { display: flex; gap: 30px; }
-        .steer-btn { width: 80px; height: 60px; background: #444; color: white; border: 2px solid #666; border-radius: 8px; font-size: 22px; font-weight: bold; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer; }
-        .steer-btn:active, .steer-btn.active { background: #00ffcc; color: #111; border-color: #fff; }
+        /* SHIFTED UP BUTTONS - Screen ke thoda upar aur comfortable height par */
+        .action-btn { position: absolute; bottom: 160px; width: 65px; height: 85px; color: white; font-size: 26px; font-weight: bold; border-radius: 12px; display: flex; justify-content: center; align-items: center; z-index: 15; box-shadow: 0 6px 12px rgba(0,0,0,0.4); border: 2px solid #fff; cursor: pointer; }
+        #btn-gas { left: 20px; background: rgba(46, 125, 50, 0.85); } /* S Button */
+        #btn-brake { right: 20px; background: rgba(198, 40, 40, 0.85); } /* B Button */
+        
+        .steer-btn { position: absolute; bottom: 60px; width: 75px; height: 65px; background: rgba(68, 68, 68, 0.85); color: white; border: 2px solid #aaa; border-radius: 10px; font-size: 24px; font-weight: bold; display: flex; justify-content: center; align-items: center; z-index: 15; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer; }
+        #btn-left { left: 80px; }
+        #btn-right { right: 80px; }
+        
+        .action-btn:active, .action-btn.active, .steer-btn:active, .steer-btn.active { transform: scale(0.9); background: #fff !important; color: #111 !important; border-color: #111; }
 
         /* UI Screens */
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; text-align: center; padding: 20px; }
@@ -63,12 +66,340 @@
 </head>
 <body>
 
-    <div class="game-container">
+    <div class="game-container" id="main-container">
         <div id="status-bar">
             <div id="score-val">Distance: 0m</div>
+            <div id="shield-status">🛡️ SHIELD ON</div>
             <div id="speedo">0 KM/H</div>
         </div>
 
         <div id="world">
             <div class="audience-track track-left">
-                
+                <span class="spectator">🧍‍♂️</span><span class="spectator">🧍‍♀️</span>
+                <span class="spectator">🧑‍🤝‍🧑</span><span class="spectator">🧔</span>
+                <span class="spectator">🏃‍♂️</span><span class="spectator">🧍‍♀️</span>
+            </div>
+            <div class="audience-track track-right">
+                <span class="spectator">🧍‍♀️</span><span class="spectator">🧍‍♂️</span>
+                <span class="spectator">🧔</span><span class="spectator">🧑‍🤝‍🧑</span>
+                <span class="spectator">🧍‍♂️</span><span class="spectator">🏃‍♀️</span>
+            </div>
+
+            <div class="action-btn" id="btn-gas">S</div>
+            <div class="action-btn" id="btn-brake">B</div>
+            <div class="steer-btn" id="btn-left">◀</div>
+            <div class="steer-btn" id="btn-right">▶</div>
+
+            <div id="road">
+                <div class="special-line" id="start-line" style="bottom: 120px;"></div>
+                <div class="special-line" id="finish-line" style="top: -200px; display: none;"></div>
+                <div id="player-car">
+                    <div class="car-wheel w-tl"></div><div class="car-wheel w-tr"></div>
+                    <div class="car-wheel w-bl"></div><div class="car-wheel w-br"></div>
+                    <div class="glass"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="menu-screen" class="screen">
+            <h2>PRO RACING CHALLENGE</h2>
+            <p>Select Your Racing Car:</p>
+            <div class="car-selector">
+                <div class="car-opt selected" data-color="#e63946" style="background: #e63946;"></div>
+                <div class="car-opt" data-color="#ffb703" style="background: #ffb703;"></div>
+                <div class="car-opt" data-color="#1d3557" style="background: #1d3557;"></div>
+            </div>
+            <p style="color: #00ffcc; font-size: 14px; font-weight:bold;">TILT / HILAO MOBILE TO STEER CAR!</p>
+            <p style="color: #bbb; font-size: 13px;">Collect 🪙 for Speed Boost & 🛡️ for Crash Protection!</p>
+            <button class="btn" id="start-btn">START RACE 🏁</button>
+        </div>
+
+        <div id="end-screen" class="screen" style="display: none;">
+            <h2 id="end-title">GAME OVER</h2>
+            <p id="end-sub">You crashed!</p>
+            <button class="btn" id="restart-btn">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        const road = document.getElementById('road');
+        const world = document.getElementById('world');
+        const mainContainer = document.getElementById('main-container');
+        const playerCar = document.getElementById('player-car');
+        const startLine = document.getElementById('start-line');
+        const finishLine = document.getElementById('finish-line');
+        const speedo = document.getElementById('speedo');
+        const scoreVal = document.getElementById('score-val');
+        const shieldStatus = document.getElementById('shield-status');
+        const menuScreen = document.getElementById('menu-screen');
+        const endScreen = document.getElementById('end-screen');
+        const carOptions = document.querySelectorAll('.car-opt');
+
+        let gameActive = false;
+        let distance = 0;
+        let currentSpeed = 0;
+        let maxSpeed = 15;
+        let roadPos = 0;
+        let playerX = 115; 
+        let selectedColor = "#e63946";
+        let hasShield = false;
+        
+        let enemies = [];
+        let items = [];
+        let lines = [];
+        let inputs = { left: false, right: false, gas: false, brake: false };
+        let tiltX = 0;
+
+        // Audio Synth
+        let audioCtx = null;
+        let engineOsc = null;
+        let engineGain = null;
+
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        
+        function playWhistle() {
+            initAudio(); let t = audioCtx.currentTime;
+            let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+            osc.type = 'sine'; osc.frequency.setValueAtTime(1300, t);
+            osc.frequency.exponentialRampToValueAtTime(1600, t + 0.1);
+            gain.gain.setValueAtTime(0.2, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
+            osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t + 0.5);
+        }
+
+        function startEngineSound() {
+            initAudio(); let t = audioCtx.currentTime;
+            engineOsc = audioCtx.createOscillator(); engineGain = audioCtx.createGain();
+            engineOsc.type = 'sawtooth'; engineOsc.frequency.setValueAtTime(55, t);
+            engineGain.gain.setValueAtTime(0.04, t);
+            let filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.setValueAtTime(220, t);
+            engineOsc.connect(filter); filter.connect(engineGain); engineGain.connect(audioCtx.destination);
+            engineOsc.start(t);
+        }
+
+        function updateEngineSound() {
+            if (!engineOsc) return; let t = audioCtx.currentTime;
+            let pitch = 55 + (currentSpeed * 13); engineOsc.frequency.setTargetAtTime(pitch, t, 0.1);
+            let volume = inputs.gas ? 0.12 : 0.04; if(inputs.brake) volume = 0.01;
+            engineGain.gain.setTargetAtTime(volume, t, 0.1);
+        }
+
+        function stopEngineSound() { if (engineOsc) { try { engineOsc.stop(); } catch(e){} engineOsc = null; } }
+
+        function playBonusSound() {
+            initAudio(); let t = audioCtx.currentTime;
+            let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+            osc.type = 'sine'; osc.frequency.setValueAtTime(600, t); osc.frequency.setValueAtTime(900, t + 0.08);
+            gain.gain.setValueAtTime(0.15, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+            osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t + 0.2);
+        }
+
+        // TILT SENSOR SYSTEM (Mobile Hilane ke liye)
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', (e) => {
+                if (!gameActive) return;
+                // Gamma represents left-right tilt in degrees (-90 to 90)
+                let tilt = e.gamma; 
+                if (tilt !== null) {
+                    if (tilt > 6) { tiltX = Math.min(tilt / 4, 5); } 
+                    else if (tilt < -6) { tiltX = Math.max(tilt / 4, -5); } 
+                    else { tiltX = 0; }
+                }
+            }, true);
+        }
+
+        // Click Controls
+        carOptions.forEach(opt => {
+            opt.addEventListener('click', () => {
+                carOptions.forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected'); selectedColor = opt.getAttribute('data-color');
+            });
+        });
+
+        const bindControl = (id, property) => {
+            const el = document.getElementById(id);
+            const start = (e) => { e.preventDefault(); inputs[property] = true; el.classList.add('active'); };
+            const end = () => { inputs[property] = false; el.classList.remove('active'); };
+            el.addEventListener('mousedown', start); el.addEventListener('mouseup', end);
+            el.addEventListener('touchstart', start); el.addEventListener('touchend', end);
+        };
+        bindControl('btn-left', 'left'); bindControl('btn-right', 'right');
+        bindControl('btn-gas', 'gas'); bindControl('btn-brake', 'brake');
+
+        // Keyboard Controls
+        window.addEventListener('keydown', (e) => {
+            if(e.key === 'ArrowLeft' || e.key === 'a') inputs.left = true;
+            if(e.key === 'ArrowRight' || e.key === 'd') inputs.right = true;
+            if(e.key === 's' || e.key === 'S') inputs.gas = true;
+            if(e.key === 'b' || e.key === 'B') inputs.brake = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            if(e.key === 'ArrowLeft' || e.key === 'a') inputs.left = false;
+            if(e.key === 'ArrowRight' || e.key === 'd') inputs.right = false;
+            if(e.key === 's' || e.key === 'S') inputs.gas = false;
+            if(e.key === 'b' || e.key === 'B') inputs.brake = false;
+        });
+
+        // Track Lines Generator
+        for(let i=0; i<15; i++) {
+            let l = document.createElement('div'); l.className = 'line';
+            l.style.top = (i * 50) + 'px'; road.appendChild(l); lines.push(l);
+        }
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            // Mobile standard security trigger permission for iOS devices
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission().then(permissionState => {
+                    if (permissionState === 'granted') { initGame(); } else { initGame(); }
+                }).catch(() => initGame());
+            } else { initGame(); }
+        });
+        document.getElementById('restart-btn').addEventListener('click', initGame);
+
+        function initGame() {
+            menuScreen.style.display = 'none'; endScreen.style.display = 'none';
+            playerCar.style.background = selectedColor;
+            playerCar.style.boxShadow = "0 4px 8px rgba(0,0,0,0.5)";
+            world.style.background = "#2e7d32"; road.style.background = "#333";
+            
+            gameActive = true; distance = 0; currentSpeed = 0; playerX = 115; roadPos = 0; hasShield = false;
+            shieldStatus.style.display = 'none';
+            startLine.style.bottom = '120px'; finishLine.style.display = 'none'; finishLine.style.top = '-200px';
+
+            enemies.forEach(e => e.remove()); enemies = [];
+            items.forEach(i => i.remove()); items = [];
+
+            playWhistle(); setTimeout(startEngineSound, 200);
+            spawnEnemy(); spawnItems();
+            window.requestAnimationFrame(updateLoop);
+        }
+
+        function spawnEnemy() {
+            if(!gameActive || distance > 460) return;
+            let e = document.createElement('div'); e.className = 'enemy-car';
+            e.style.background = Math.random() > 0.5 ? '#00b4d8' : '#7209b7';
+            e.style.top = '-100px'; e.style.left = Math.floor(Math.random() * 220) + 'px';
+            e.innerHTML = '<div class="car-wheel w-tl"></div><div class="car-wheel w-tr"></div><div class="car-wheel w-bl"></div><div class="car-wheel w-br"></div><div class="glass" style="top:45px;"></div>';
+            road.appendChild(e); enemies.push(e);
+            setTimeout(spawnEnemy, Math.random() * 1500 + 1000);
+        }
+
+        function spawnItems() {
+            if(!gameActive || distance > 450) return;
+            let it = document.createElement('div'); it.className = 'item';
+            let isShield = Math.random() > 0.75;
+            it.innerText = isShield ? "🛡️" : "🪙";
+            it.dataset.type = isShield ? "shield" : "coin";
+            it.style.top = '-50px'; it.style.left = Math.floor(Math.random() * 230) + 'px';
+            road.appendChild(it); items.push(it);
+            setTimeout(spawnItems, Math.random() * 3000 + 2000);
+        }
+
+        function updateLoop() {
+            if (!gameActive) return;
+
+            // 1. Gas/Brake Mechanics
+            if (inputs.gas) { currentSpeed = Math.min(currentSpeed + 0.22, maxSpeed); } 
+            else if (inputs.brake) { currentSpeed = Math.max(currentSpeed - 0.65, 0); } 
+            else { currentSpeed = Math.max(currentSpeed - 0.08, 0); }
+
+            updateEngineSound();
+            speedo.innerText = Math.round(currentSpeed * 12) + " KM/H";
+            
+            if(currentSpeed > 0 && distance < 500) {
+                distance += (currentSpeed * 0.05);
+                scoreVal.innerText = `Distance: ${Math.floor(distance)}m`;
+            }
+
+            // 2. Dual Steering Layout (Buttons + Tilt Sync)
+            let steerFactor = 0;
+            if (inputs.left) steerFactor = -4.5;
+            else if (inputs.right) steerFactor = 4.5;
+            else if (tiltX !== 0) steerFactor = tiltX; // Tilt works dynamically if buttons unpressed
+
+            playerX += steerFactor;
+            if(playerX < 5) playerX = 5; if(playerX > 230) playerX = 230;
+
+            if(steerFactor < 0) playerCar.style.transform = 'rotate(-6deg)';
+            else if(steerFactor > 0) playerCar.style.transform = 'rotate(6deg)';
+            else playerCar.style.transform = 'rotate(0deg)';
+            playerCar.style.left = playerX + 'px';
+
+            // 3. Environmental Graphics (Road lines + Night mode shift at 200m)
+            roadPos += currentSpeed;
+            lines.forEach((l, idx) => { l.style.top = ((idx * 60) + (roadPos % 60)) + 'px'; });
+
+            if(distance > 200 && distance < 450) {
+                world.style.background = "#1b4d3e"; road.style.background = "#1a1a1a";
+            }
+
+            if(distance < 50) { startLine.style.top = 450 + (distance * 10) + 'px'; } else { startLine.style.top = '-200px'; }
+
+            if(distance >= 460) {
+                finishLine.style.display = 'flex';
+                let fTop = -100 + ((distance - 460) * 15); finishLine.style.top = fTop + 'px';
+                if(fTop > 420) { triggerWin(); return; }
+            }
+
+            // Spectators bounce
+            if(currentSpeed > 1) {
+                document.querySelectorAll('.spectator').forEach(s => {
+                    s.style.transform = `translateX(${Math.sin(roadPos * 0.08 + Math.random()) * 3}px)`;
+                });
+            }
+
+            // 4. Move Power-Up Items
+            for(let i = items.length - 1; i >= 0; i--) {
+                let it = items[i]; let itTop = parseFloat(it.style.top);
+                itTop += currentSpeed; it.style.top = itTop + 'px';
+
+                if(checkCollision(playerCar, it)) {
+                    playBonusSound();
+                    if(it.dataset.type === 'shield') {
+                        hasShield = true; shieldStatus.style.display = 'block';
+                        playerCar.style.boxShadow = "0 0 20px #3a86ff";
+                    } else { distance += 15; } // Coin adds 15 meters instantly
+                    it.remove(); items.splice(i, 1); continue;
+                }
+                if (itTop > 750) { it.remove(); items.splice(i, 1); }
+            }
+
+            // 5. Move Enemies & Hit test
+            for(let i = enemies.length - 1; i >= 0; i--) {
+                let e = enemies[i]; let eTop = parseFloat(e.style.top);
+                eTop += currentSpeed * 0.65 + 2.5; e.style.top = eTop + 'px';
+
+                if (checkCollision(playerCar, e)) {
+                    if(hasShield) { // Shield defends the crash
+                        hasShield = false; shieldStatus.style.display = 'none';
+                        playerCar.style.boxShadow = "0 4px 8px rgba(0,0,0,0.5)";
+                        e.remove(); enemies.splice(i, 1);
+                        playBonusSound(); continue;
+                    } else { triggerGameOver(); return; }
+                }
+                if (eTop > 750) { e.remove(); enemies.splice(i, 1); }
+            }
+
+            window.requestAnimationFrame(updateLoop);
+        }
+
+        function checkCollision(a, b) {
+            let aR = a.getBoundingClientRect(); let bR = b.getBoundingClientRect();
+            return !(aR.bottom < bR.top || aR.top > bR.bottom || aR.right < bR.left || aR.left > bR.right);
+        }
+
+        function triggerGameOver() {
+            gameActive = false; stopEngineSound();
+            endScreen.style.display = 'flex';
+            document.getElementById('end-title').innerText = "CRASHED! 💥"; document.getElementById('end-title').style.color = "#ff3333";
+            document.getElementById('end-sub').innerText = `Score: ${Math.floor(distance)}m`;
+        }
+
+        function triggerWin() {
+            gameActive = false; stopEngineSound();
+            endScreen.style.display = 'flex';
+            document.getElementById('end-title').innerText = "VICTORY! 🏆"; document.getElementById('end-title').style.color = "#00ffcc";
+            document.getElementById('end-sub').innerText = "You crossed the Finish Line successfully!";
+        }
+    </script>
+</body>
+</html>
