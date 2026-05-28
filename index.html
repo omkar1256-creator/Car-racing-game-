@@ -287,7 +287,7 @@
             if(!gameActive || distance > 450) return;
             let it = document.createElement('div'); it.className = 'item';
             let isShield = Math.random() > 0.75;
-            it.innerText = isShield ? "🛡️" : "🪙";
+            it.innerText = isShield ? "🛡️" : "🪙💎";
             it.dataset.type = isShield ? "shield" : "coin";
             it.style.top = '-50px'; it.style.left = Math.floor(Math.random() * 230) + 'px';
             road.appendChild(it); items.push(it);
